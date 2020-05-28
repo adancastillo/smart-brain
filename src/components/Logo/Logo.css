@@ -1,0 +1,13 @@
+.logo {
+  background: linear-gradient(89deg, #ff5edf 0%, #04c8de 100%);
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+.inner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
