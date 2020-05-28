@@ -32,6 +32,7 @@ const initialState = {
   input: "",
   imageUrl: "",
   box: {},
+  boxes: [],
   route: "signin",
   isSignedIn: false,
   user: {
@@ -62,22 +63,29 @@ class App extends React.Component {
   };
 
   calculateFaceLocation = (data) => {
-    const clarifaiFace =
-      data.outputs[0].data.regions[0].region_info.bounding_box;
     const image = document.getElementById("input-image");
     const width = Number(image.width);
     const height = Number(image.height);
 
-    return {
-      leftCol: clarifaiFace.left_col * width,
-      topRow: clarifaiFace.top_row * height,
-      rightCol: width - clarifaiFace.right_col * width,
-      bottomRow: height - clarifaiFace.bottom_row * height,
-    };
+    let faceLocations = data.outputs[0].data.regions.map(
+      (region) => region.region_info.bounding_box
+    );
+
+    faceLocations = faceLocations.map((location) => {
+      return {
+        leftCol: location.left_col * width,
+        topRow: location.top_row * height,
+        rightCol: width - location.right_col * width,
+        bottomRow: height - location.bottom_row * height,
+      };
+    });
+
+    return faceLocations;
   };
 
-  displayFaceBox = (box) => {
-    this.setState({ box: box });
+  displayFaceBox = (boxes) => {
+    this.setState({ box: boxes[0] });
+    this.setState({ boxes: boxes });
   };
 
   onInputChange = (event) => {
@@ -125,7 +133,7 @@ class App extends React.Component {
   };
 
   render() {
-    const { isSignedIn, imageUrl, route, box } = this.state;
+    const { isSignedIn, imageUrl, route, box, boxes } = this.state;
     return (
       <div className="App">
         <Particles className="particles" params={particlesOptions} />
@@ -145,7 +153,7 @@ class App extends React.Component {
               onInputChange={this.onInputChange}
               onSubmit={this.onSubmit}
             />
-            <FaceRecognition box={box} imageUrl={imageUrl} />
+            <FaceRecognition box={box} boxes={boxes} imageUrl={imageUrl} />
           </div>
         ) : route === "signin" ? (
           <SignIn loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
@@ -161,26 +169,3 @@ class App extends React.Component {
 }
 
 export default App;
-
-///////
-// Note: Updated Clarifai API: FACE_DETECT_MODEL
-
-// Heads up that the clarifai API has been updated since I made the next video.
-// You will get an error using Clarifai.DETECT_FACE,  it appears to have changed
-// to Clarifai.FACE_DETECT_MODEL (Read more about it here: https://clarifai.com/developer/guide).
-
-// Also, the URL in the next video has also been updated. Keep this in mind as you
-// go through the exercise:
-
-//     app.models
-//     .predict(
-//     Clarifai.COLOR_MODEL,
-//         // URL
-//         "https://samples.clarifai.com/metro-north.jpg"
-//     )
-//     .then(function(response) {
-//         // do something with responseconsole.log(response);
-//         },
-//         function(err) {// there was an error}
-//     );
-///////
